@@ -16,3 +16,4 @@ class BlogOverview extends Model
     }
     use HasFactory;
 }
+

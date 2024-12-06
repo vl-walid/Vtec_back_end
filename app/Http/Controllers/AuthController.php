@@ -8,41 +8,50 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Support\Facades\Log; // For logging information and errors
 class AuthController extends Controller
 {
     // Define the correct admin code
     private $adminCode = 'walid2004';
+
+
+
     public function register(Request $request)
     {
         try {
             // Validate the incoming data
             $validatedData = $request->validate([
                 'name' => 'required|string|max:255',
-                'email' => 'required|string|email|unique:users',
+                'email' => 'required|string|email|unique:admins,email', // Unique email validation for the 'admins' table
                 'password' => 'required|string|min:4',
                 'admin_code' => 'required|string', // Admin code validation
             ]);
 
             // Check if the provided admin code matches the correct admin code
             if ($validatedData['admin_code'] !== $this->adminCode) {
-                return response()->json(['message' => 'Invalid admin code.' ], 403); // Forbidden if the admin code is wrong
+                return response()->json(['message' => 'Invalid admin code.'], 403); // Forbidden if the admin code is wrong
             }
 
             // Create a new Admin user after validation and correct admin code
-            $user = Admin::create([
+            $admin = Admin::create([
                 'name' => $validatedData['name'],
                 'email' => $validatedData['email'],
                 'password' => bcrypt($validatedData['password']),
             ]);
 
             // Return a success message
-            return response()->json(['message' => 'User registered successfully' ], 201);
+            return response()->json(['message' => 'Admin registered successfully', 'admin' => $admin], 201);
 
         } catch (ValidationException $e) {
             // If validation fails, return validation errors
             return response()->json(['errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            // Catch any unexpected errors and log them
+            \Log::error('Unexpected Error:', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Internal Server Error.'], 500);
         }
     }
+
     //login
     public function login(Request $request)
     {
