@@ -18,6 +18,15 @@ use App\Models\generations;
 use App\Models\vehicle_chart_data;
 use App\Models\vehicles_characteristics;
 use App\Models\tuning;
+use App\Models\vehicle_tuning;
+use Exception;
+use Illuminate\Http\JsonResponse;
+
+use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\DB;
+
+
+
 class VehiclesController extends Controller
 {
 
@@ -149,11 +158,13 @@ class VehiclesController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
-        //
+        try {
+
 
         $validated = $request->validate([
+            // vehicle details
             "vehicle_name" => "required|string|max:255",
             "vehicle_fuel" => "required|string|max:255",
             "vehicle_category" => "required|exists:categories,category_id",
@@ -162,24 +173,49 @@ class VehiclesController extends Controller
             "vehicle_engine" => "required|exists:engines,engine_id",
             "vehicle_ecu" => "required|exists:ecus,ecu_id",
             "vehicle_generation" => "required|exists:generations,generation_id",
-
             "vehicle_standard_power" => "required|numeric",
             "vehicle_standard_torque" => "required|numeric",
             "vehicle_cylinder" => "required|string|max:255",
             "vehicle_compression" => "required|string|max:255",
             "vehicle_bore" => "required|string|max:255",
 
-            "vehicle_rpm" => "required|string",
-            "vehicle_oem_power" => "required|string",
-            "vehicle_oem_torque" => "required|string",
+            // tuning type
+            "vehicle_tuning" => "required|numeric",
+
+            // vehicle chart data
+            "vehicle_data_rpm" => "required|string|regex:/^(\d+,)+\d+$/",
+            "vehicle_data_oem_power_chart" => "required|string|regex:/^(\d+,)+\d+$/",
+            "vehicle_data_oem_torque_chart" => "required|string|regex:/^(\d+,)+\d+$/",
+
+            // vehicle tuning details
+            "vehicle_tuning_difference_power" => "required|numeric",
+            "vehicle_tuning_difference_torque" => "required|numeric",
+            "vehicle_tuning_max_power" => "required|numeric",
+            "vehicle_tuning_max_torque" => "required|numeric",
+            "vehicle_tuning_power_chart" => "required|string|regex:/^(\d+,)+\d+$/",
+            "vehicle_tuning_torque_chart" => "required|string|regex:/^(\d+,)+\d+$/",
+
+            // vehicle characteristics
+            "characteristics" => "nullable|array",
+            "characteristics.*" => "required|string|distinct|min:1",
         ]);
 
-        $chart_data = vehicle_chart_data::create([
-            "vehicle_data_rpm" => $validated["vehicle_rpm"],
-            "vehicle_data_oem_power_chart" => $validated["vehicle_oem_power"],
-            "vehicle_data_oem_torque_chart" => $validated["vehicle_oem_torque"],
+        DB::beginTransaction();
+
+        $chart_data = vehicle_chart_data::firstOrCreate([
+            "vehicle_data_rpm" => $validated["vehicle_data_rpm"],
+            "vehicle_data_oem_power_chart" => $validated["vehicle_data_oem_power_chart"],
+            "vehicle_data_oem_torque_chart" => $validated["vehicle_data_oem_torque_chart"],
         ]);
 
+        $vehicle_tuning_details = vehicle_tuning::firstOrCreate([
+            "vehicle_tuning_difference_power" => $validated["vehicle_tuning_difference_power"],
+            "vehicle_tuning_difference_torque" => $validated["vehicle_tuning_difference_torque"],
+            "vehicle_tuning_max_power" => $validated["vehicle_tuning_max_power"],
+            "vehicle_tuning_max_torque" => $validated["vehicle_tuning_max_torque"],
+            "vehicle_tuning_power_chart" => $validated["vehicle_tuning_power_chart"],
+            "vehicle_tuning_torque_chart" => $validated["vehicle_tuning_torque_chart"]
+        ]);
 
         $vehicle = vehicles::create([
             "vehicle_name" => $validated["vehicle_name"],
@@ -195,12 +231,38 @@ class VehiclesController extends Controller
             "brand_id" => $validated["vehicle_brand"],
             "engine_id" => $validated["vehicle_engine"],
             "ecu_id" => $validated["vehicle_ecu"],
-            "data_chart_id" => $chart_data->vehicle_data_id,
-            "characteristic_id" => 1
+            "vehicle_tuning" => $validated["vehicle_tuning"],
+            "vehicle_tuning_details" => $vehicle_tuning_details->vehicle_tuning_id,
+            "data_chart_id" => $chart_data->vehicle_data_id
         ]);
 
-        return redirect()->route('vehicles.index')->with('success', 'Vehicle created successfully!');
-        // return redirect(route("vehicles.thank", ["vehicle" => $vehicle]));
+        if (!empty($validated["characteristics"])) {
+            foreach($validated["characteristics"] as $characteristic_name) {
+                $characteristic = characteristics::firstOrCreate($characteristic_name);
+                $vehicle_characteristics = vehicles_characteristics::create([
+                    "vehicle_characteristic_vehicle" => $vehicle->id,
+                    "vehicle_characteristic_characteristic" => $characteristic->id,
+                ]);
+            }
+        }
+
+        DB::commit();
+
+        return response()->json(['message' => 'Vehicle created successfully'], 201);
+
+        } catch (ValidationException $e) {
+            
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'An Error Occured',
+                'errors' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function getVehicleDetailsDropdown(Request $request)

@@ -105,6 +105,9 @@ Route::get('/vehicles/generations', [VehiclesController::class, 'getGenerationsB
 Route::get('/vehicles/engines', [VehiclesController::class, 'getEnginesByGeneration']);
 Route::get('/vehicles/ecus', [VehiclesController::class, 'getEcusByEngine']);
 
+// CREATE vehicle
+Route::post("/vehicle/create", [VehiclesController::class, "store"]);
+
 // vehicles/details
 Route::get('/vehicles/details', [VehiclesController::class, 'getVehicleDetails']);
 
