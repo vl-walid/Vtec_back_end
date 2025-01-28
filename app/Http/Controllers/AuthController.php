@@ -46,8 +46,7 @@ class AuthController extends Controller
             // If validation fails, return validation errors
             return response()->json(['errors' => $e->errors()], 422);
         } catch (\Exception $e) {
-            // Catch any unexpected errors and log them
-            \Log::error('Unexpected Error:', ['error' => $e->getMessage()]);
+            // Catch any unexpected errors and log the
             return response()->json(['error' => 'Internal Server Error.'], 500);
         }
     }
@@ -119,34 +118,37 @@ class AuthController extends Controller
             return response()->json(['message' => 'Token verification failed', 'error' => $e->getMessage()], 500); // 500 for server error
         }
     }
+
     public function logout(Request $request)
     {
-        // Get the token from the Authorization header
+        // Ensure the request has the Authorization header with the token
         $token = $request->bearerToken();
-
+    
+        // If no token is provided, return an error response
         if (!$token) {
-            return response()->json(['message' => 'Token missing'], 400); // If the token is missing
+            return response()->json(['message' => 'Token missing'], 400); // 400 for bad request
         }
-
+    
         try {
-            // Get the authenticated user based on the provided token
-            $user = Auth::guard('sanctum')->user();
-
+            // Get the authenticated user using the request
+            $user = $request->user();
+    
+            // If the user is authenticated, revoke the token
             if ($user) {
-                // Revoke the token that was used to authenticate the user
-                $user->currentAccessToken()->delete(); // This deletes the token used for authentication
-
-                return response()->json(['message' => 'Successfully logged out'], 200); // Return success
+                // Revoke the current token
+                $user->currentAccessToken()->delete(); // This should work correctly now
+    
+                // Return a success message
+                return response()->json(['message' => 'Logout successful'], 200);
+            } else {
+                // If authentication fails (invalid or expired token)
+                return response()->json(['message' => 'Invalid token'], 401); // 401 for unauthorized
             }
-
-            // If the user is not found or the token is invalid
-            return response()->json(['message' => 'Invalid token or user not found'], 401); // Unauthorized
-
         } catch (\Exception $e) {
-            // If an error occurs, return a server error message
-            return response()->json(['message' => 'An error occurred during logout', 'error' => $e->getMessage()], 500); // Internal server error
+            // Catch any exceptions (e.g., token revocation failures)
+            Log::error('Logout Error: ' . $e->getMessage()); // Log error for debugging
+            return response()->json(['message' => 'Logout failed', 'error' => $e->getMessage()], 500); // 500 for server error
         }
     }
-
-
+    
 }

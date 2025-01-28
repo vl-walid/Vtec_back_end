@@ -5,14 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Tuning extends Model
+class Characteristic extends Model
 {
     use HasFactory;
 
-
-    // Specify the table associated with the model
-    protected $table = 'tunings';
-
-    protected $fillable = ['name'];
-
+    protected $fillable = [
+        'name',
+        'code',
+        'image',
+    ];
 }

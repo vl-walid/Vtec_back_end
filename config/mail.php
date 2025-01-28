@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'default' => env('MAIL_MAILER', 'smtp'),
+    'default' => env('MAIL_MAILER', 'mailers'),
 
     /*
     |--------------------------------------------------------------------------
@@ -58,11 +58,10 @@ return [
             // ],
         ],
 
-        'mailgun' => [
-            'transport' => 'mailgun',
-            // 'client' => [
-            //     'timeout' => 5,
-            // ],
+        'mailers' => [
+            'mailgun' => [
+                'transport' => 'mailgun',
+            ],
         ],
 
         'sendmail' => [
