@@ -54,7 +54,7 @@ class MailController extends Controller
         // Send the raw email (bypassing Blade template)
         try {
             Mail::raw($emailContent, function ($message) {
-                $message->to('walidnhaila33@gmail.com')  // Replace with your Gmail address
+                $message->to('info@vtec-chiptuning.com')  // Replace with your Gmail address
                         ->subject('Partnerschaftsanfrage von der Website');
             });
     
@@ -90,7 +90,7 @@ class MailController extends Controller
                 'Name: ' . $data['name'] . "\n" .
                 'Email: ' . $data['email'] . "\n" .
                 'Nachricht: ' . $data['message'], function ($message) {
-                    $message->to('walidnhaila33@gmail.com')  // Replace with your email address
+                    $message->to('info@vtec-chiptuning.com')  // Replace with your email address
                             ->subject('Neue Kontaktanfrage von der Website'); // Subject in German
             });
 
@@ -107,14 +107,14 @@ class MailController extends Controller
         // Define the email data (this will be passed directly)
         $data = [
             'name' => "Walid",
-            'email' => "walidnhaila33@gmail.com",
+            'email' => "info@vtec-chiptuning.com",
             'message' => "The first test",
         ];
 
         // Send the email
         try {
             Mail::raw('Name: ' . $data['name'] . "\nEmail: " . $data['email'] . "\nMessage: " . $data['message'], function ($message) {
-                $message->to('walidnhaila33@gmail.com', 'Walid')  // Replace with your Gmail address
+                $message->to('info@vtec-chiptuning.com', 'VTEC Chiptuning')  // Replace with your Gmail address
                     ->subject('New message from website');
             });
 
