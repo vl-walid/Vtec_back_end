@@ -179,9 +179,28 @@ class VehicleCharacteristicController extends Controller
         return response()->json(['message' => 'Characteristic removed successfully.'], 200);
     }
         
+        public function updateImages(Request $request)
+        {
+            // Validate the request
+            $request->validate([
+                '*.name' => 'required|string|exists:characteristics,name',
+               '*.image' => 'nullable|string'
+            ]);
     
-
-
+            $updatedCharacteristics = [];
+    
+            foreach ($request->all() as $item) {
+                $characteristic = Characteristic::where('name', $item['name'])->first();
+    
+                if ($characteristic) {
+                    $characteristic->image = $item['image'];
+                    $characteristic->save();
+                    $updatedCharacteristics[] = $characteristic;
+                }
+            }
+    
+            return response()->json(['message' => 'Images updated successfully', 'characteristics' => $updatedCharacteristics], 200);
+        }
     
 
 

@@ -12,7 +12,7 @@ class Category extends Model
     protected $table = 'categories';
 
     // Fields that are mass assignable
-    protected $fillable = ['category_name' ,'is_active',];
+    protected $fillable = ['category_name' ,'is_active','category_image'];
 
     // Define the relationship with brands
     public function brands()

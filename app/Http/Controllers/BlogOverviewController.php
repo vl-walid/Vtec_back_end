@@ -26,6 +26,26 @@ class BlogOverviewController extends Controller
     }
 
 
+    public function getBlogOverview(Request $request)
+    {
+        // Access the blogId from the request object
+        $blogId = $request->route('id'); // Get the ID from the route parameter
+
+        // Find the blog by ID
+        $blog = BlogOverview::find($blogId);
+
+        // Check if the blog exists
+        if ($blog) {
+            // Return only the main_title and main_image
+            return response()->json([
+                'main_title' => $blog->main_title,
+                'main_image' => $blog->main_image
+            ]);
+        }
+
+        // If blog not found, return a 404 error response
+        return response()->json(['error' => 'Blog not found'], 404);
+    }
     public function store(Request $request)
     {
         // Validate the incoming request

@@ -30,11 +30,14 @@ class CategoryController extends Controller
         // Validate incoming request
         $request->validate([
             'category_name' => 'required|string|max:255',
+           'category_image' => 'nullable|string',
         ]);
 
         // Create a new category
         $category = Category::create([
             'category_name' => $request->input('category_name'),
+            'category_image' => $request->input('category_image'),
+
         ]);
 
         // Respond with success (for API or frontend)
@@ -83,20 +86,32 @@ class CategoryController extends Controller
     }
 
 
-
-  
-    public function updateCategoryNames()
+    public function updateCategoryName(Request $request)
     {
-        $translations = [
-            'Lastwagen' => 'LKW',
-        ];
+        // Validation to ensure only "Traktoren" can be changed
+        $request->validate([
+            'old_category_name' => 'required|string',
+            'new_category_name' => 'required|string',
+        ]);
 
-        foreach ($translations as $english => $german) {
-            Category::where('category_name', "Lastwagen")->update(['category_name' => "LKW"]);
+        // Find the category with the old name
+        $category = Category::where('category_name', 'Traktoren')->first();
+
+        // Check if the category exists
+        if (!$category) {
+            return response()->json([
+                'message' => 'Category not found'
+            ], 404);
         }
 
-        // Return a response (optional)
-        return response()->json(['message' => 'Category names updated successfully!']);
+        // Update the category name to "Agrar"
+        $category->category_name = 'Agrar';
+        $category->save();
+
+        return response()->json([
+            'message' => 'Category name updated successfully',
+            'category' => $category
+        ]);
     }
     
 }

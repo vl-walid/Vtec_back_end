@@ -42,11 +42,13 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 //Blog Overviews
+
 Route::get('/blog-overviews', [BlogOverviewController::class, 'index']);
 Route::post('/blog-overview', [BlogOverviewController::class, 'store']);
 Route::delete('/blog-overview/{id}', [BlogOverviewController::class, 'destroy']);
 Route::put('/blog-overview/{id}', [BlogOverviewController::class, 'update']);
 Route::get('blog-overviews/latest', [BlogOverviewController::class, 'getLatestNews']);
+Route::get('blog-overview/{id}', [BlogOverviewController::class, 'getBlogOverview']);
 
 //Blog Posts
 Route::get('/blog-post-details/{id}', [BlogPostController::class, 'showdetails']);
@@ -149,4 +151,4 @@ Route::post('send-partner-request', [MailController::class, 'sendPartnerRequest'
 Route::post('send-contact-message', [MailController::class, 'sendContactMessage']);
 
 //Update 
-Route::get('/update-category-names', [CategoryController::class, 'updateCategoryNames']);
+Route::put('/update-name', [VehicleCharacteristicController::class, 'updateImages']);

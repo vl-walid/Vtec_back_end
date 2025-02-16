@@ -13,7 +13,7 @@ class CreateCategoriesTable extends Migration
             $table->string('category_name'); // Column for category names
             $table->timestamps(); // Columns for created_at and updated_at timestamps
             $table->boolean('is_active')->default(true); // Add is_active column with a default value of true
-
+            $table->string('category_image')->nullable();
         });
     }
 
