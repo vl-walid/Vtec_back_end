@@ -93,7 +93,7 @@ class TuningController extends Controller
             if ($tunings->isEmpty()) {
                 return response()->json([
                     'message' => 'No tunings found for this vehicle.',
-                ], 404);
+                ]);
             }
     
             // Return tunings in the response
